@@ -1,6 +1,21 @@
 const path = require('path');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const merge = require('webpack-merge');
+const parts = require('./webpack.parts.js');
+
+const productionConfig = merge([
+  parts.loadImages({
+    options: {
+      limit: 15000,
+      name: "[name].[ext]",
+    },
+  }),
+]);
+
+const developmentConfig = merge([
+  parts.loadImages(),
+]);
 
 module.exports = {
   output: {
