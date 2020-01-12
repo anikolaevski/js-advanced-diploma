@@ -1,3 +1,5 @@
+import { Swordsman, Bowman, Magician, Undead, Vampire, Daemon } from './GameClasses';
+
 /**
  * Generates random characters
  *

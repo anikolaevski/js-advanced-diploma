@@ -6,5 +6,10 @@ export default class Character {
     this.health = 50;
     this.type = type;
     // TODO: throw error if user use "new Character()"
+
+    // eslint-disable-next-line no-proto
+    if (this.__proto__.constructor.name === 'Character') {
+      throw new Error("Parent class instances creation isn't permitted");
+    }
   }
 }
