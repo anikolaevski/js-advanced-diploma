@@ -61,7 +61,7 @@ export class Vampire extends Character {
   }
 }
 
-export default class Daemon extends Character {
+export class Daemon extends Character {
   constructor(level, type = 'daemon') {
     super();
     this.level = level;

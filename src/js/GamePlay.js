@@ -1,8 +1,8 @@
 import { calcHealthLevel, calcTileType } from './utils';
-
+import { GlobalRules } from './GameSetup';
 export default class GamePlay {
   constructor() {
-    this.boardSize = 8;
+    this.boardSize = GlobalRules.boardSize;
     this.container = null;
     this.boardEl = null;
     this.cells = [];

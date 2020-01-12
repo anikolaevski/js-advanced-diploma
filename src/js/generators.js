@@ -1,4 +1,4 @@
-import { Swordsman, Bowman, Magician, Undead, Vampire, Daemon } from './GameClasses';
+import Team from './Team';
 
 /**
  * Generates random characters
@@ -9,8 +9,22 @@ import { Swordsman, Bowman, Magician, Undead, Vampire, Daemon } from './GameClas
  */
 export function* characterGenerator(allowedTypes, maxLevel) {
   // TODO: write logic here
+  let typNumber; let
+    level;
+  for (let i = 0; i < allowedTypes.length; i++) {
+    typNumber = Math.floor(Math.random() * allowedTypes.length);
+    level = Math.floor(Math.random() * (maxLevel)) + 1;
+    yield new allowedTypes[typNumber](level);
+  }
 }
 
 export function generateTeam(allowedTypes, maxLevel, characterCount) {
   // TODO: write logic here
+  const x = characterGenerator(allowedTypes, maxLevel);
+  const myTeam = new Team();
+  // eslint-disable-next-line no-plusplus
+  for (let k = 0; k < characterCount; k++) {
+    myTeam.add(x.next().value);
+  }
+  return myTeam;
 }
