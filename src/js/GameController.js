@@ -1,4 +1,5 @@
 import themes from './themes';
+import { createTeams } from './GameSetup';
 
 export default class GameController {
   constructor(gamePlay, stateService) {
@@ -9,6 +10,9 @@ export default class GameController {
   init(themeName) {
     // TODO: add event listeners to gamePlay events
     this.gamePlay.drawUi(themes[themeName].name);
+    const pos = createTeams();
+    // console.log(pos);
+    this.gamePlay.redrawPositions(pos);
     // TODO: load saved stated from stateService
   }
 

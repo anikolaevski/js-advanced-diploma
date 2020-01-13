@@ -13,7 +13,7 @@ const AllowedClasses = {
 
 export const GlobalRules = {
   boardSize: 8,
-}
+};
 
 const AllowedPos = {
   player: {
@@ -39,32 +39,41 @@ const initRules = {
   maxlevel: 1,
 };
 
-// const nextLevelRules = {
-//   extra
-// }
-
-export function createTeams() {
-  const myTeam = generateTeam(AllowedClasses.player, initRules.maxlevel, initRules.players);
-  // const oppTeam = generateTeam(AllowedClasses.opponent, initRules.maxlevel, initRules.players);
-  console.log('myTeam', myTeam);
-  // console.log('oppTeam', oppTeam);
-  const pos1 = createPositions(myTeam, 'player');
-  console.log('positions', pos1);
-
-}
-
-function createPositions(team, teamType) {
-  const myPosCharacters = [];
+function calcPosition(teamType) {
   const xlimits = AllowedPos[teamType].x;
   const ylimits = AllowedPos[teamType].y;
-  // console.log(xlimits, ylimits);
-  for ( const member of team.set) {
-    let x = Math.floor(Math.random() * (xlimits[1] - xlimits[0] + 1)) + xlimits[0];
-    let y = Math.floor(Math.random() * (ylimits[1] - ylimits[0] + 1)) + ylimits[0];
-    // console.log(x, y);
-    let position = (y + 1) * GlobalRules.boardSize + x + 1;
-    myPosCharacters.push(new PositionedCharacter(member, position));
-  }
-  return myPosCharacters;
+  const x = Math.floor(Math.random() * (xlimits[1] - xlimits[0] + 1)) + xlimits[0];
+  const y = Math.floor(Math.random() * (ylimits[1] - ylimits[0] + 1)) + ylimits[0];
+  return y * GlobalRules.boardSize + x;
+}
 
+function createPositions(team, myPosCharacters, teamType) {
+  const setpos = new Set();
+  for (const member of team.set) {
+    let pos = calcPosition(teamType);
+    if (setpos.size === 0) {
+      setpos.add(pos);
+    } else {
+      while (setpos.has(pos)) {
+        console.log(`pos=${pos} is not free`);
+        pos = calcPosition(teamType);
+      }
+    }
+    setpos.add(pos);
+    console.log(pos, member.val);
+    myPosCharacters.push(new PositionedCharacter(member.val, pos));
+    // }
+  }
+}
+
+export function createTeams() {
+  const myPosCharacters = [];
+  const myTeam = generateTeam(AllowedClasses.player, initRules.maxlevel, initRules.players);
+  const oppTeam = generateTeam(AllowedClasses.opponent, initRules.maxlevel, initRules.players);
+  // console.log('myTeam', myTeam);
+  // console.log('oppTeam', oppTeam);
+  createPositions(myTeam, myPosCharacters, 'player');
+  createPositions(oppTeam, myPosCharacters, 'opponent');
+  // // console.log('positions', myPosCharacters);
+  return myPosCharacters;
 }
