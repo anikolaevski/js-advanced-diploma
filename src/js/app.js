@@ -14,3 +14,4 @@ const gameCtrl = new GameController(gamePlay, stateService);
 gameCtrl.init('prairie');
 
 // don't write your code here
+// console.log(gamePlay);

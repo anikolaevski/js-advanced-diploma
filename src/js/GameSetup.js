@@ -60,7 +60,7 @@ function createPositions(team, myPosCharacters, teamType) {
       }
     }
     setpos.add(pos);
-    console.log(pos, member.val);
+    console.log(pos, member.val.showStatus(), member.val);
     myPosCharacters.push(new PositionedCharacter(member.val, pos));
     // }
   }

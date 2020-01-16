@@ -13,4 +13,18 @@ export default class Character {
       // this.__proto__.constructor.name
     }
   }
+
+  showStatus() {
+    const signs = {
+      level: 0x1F396,
+      attack: 0x2694,
+      defence: 0x1F6E1,
+      health: 0x2764,
+    };
+    const result = `${String.fromCodePoint(signs.level)}${this.level}`
+    + `${String.fromCodePoint(signs.attack)}${this.attack}`
+    + `${String.fromCodePoint(signs.defence)}${this.defence}`
+    + `${String.fromCodePoint(signs.health)}${this.health}`;
+    return result;
+  }
 }
