@@ -8,6 +8,7 @@ export class Swordsman extends Character {
     this.attack = 40;
     this.defence = 10;
     this.range = 1;
+    this.attackrange = 1;
     this.health = 50;
     this.type = type;
   }
@@ -20,6 +21,7 @@ export class Bowman extends Character {
     this.attack = 25;
     this.defence = 25;
     this.range = 2;
+    this.attackrange = 2;
     this.health = 50;
     this.type = type;
   }
@@ -32,6 +34,7 @@ export class Magician extends Character {
     this.attack = 10;
     this.defence = 40;
     this.range = 1;
+    this.attackrange = 4;
     this.health = 50;
     this.type = type;
   }
@@ -44,6 +47,7 @@ export class Undead extends Character {
     this.attack = 25;
     this.defence = 25;
     this.range = 1;
+    this.attackrange = 1;
     this.health = 50;
     this.type = type;
   }
@@ -55,7 +59,8 @@ export class Vampire extends Character {
     this.level = level;
     this.attack = 40;
     this.defence = 10;
-    this.range = 1;
+    this.range = 2;
+    this.attackrange = 2;
     this.health = 50;
     this.type = type;
   }
@@ -68,6 +73,7 @@ export class Daemon extends Character {
     this.attack = 10;
     this.defence = 40;
     this.range = 1;
+    this.attackrange = 4;
     this.health = 50;
     this.type = type;
   }

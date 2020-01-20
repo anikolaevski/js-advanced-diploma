@@ -11,7 +11,7 @@ gamePlay.bindToDOM(document.querySelector('#game-container'));
 const stateService = new GameStateService(localStorage);
 
 const gameCtrl = new GameController(gamePlay, stateService);
-gameCtrl.init('prairie');
+gameCtrl.init(1);
 
 // don't write your code here
 // console.log(gamePlay);

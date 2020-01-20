@@ -11,6 +11,7 @@ export function* characterGenerator(allowedTypes, maxLevel) {
   // TODO: write logic here
   let typNumber; let
     level;
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < allowedTypes.length; i++) {
     typNumber = Math.floor(Math.random() * allowedTypes.length);
     level = Math.floor(Math.random() * (maxLevel)) + 1;

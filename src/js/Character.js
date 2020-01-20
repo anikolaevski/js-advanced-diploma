@@ -27,4 +27,13 @@ export default class Character {
     + `${String.fromCodePoint(signs.health)}${this.health}`;
     return result;
   }
+
+  levelup() {
+    this.level += 1;
+    const attack = Math.max(this.attack, this.attack * (1.8 - this.health / 100));
+    const defence = Math.max(this.defence, this.defence * (1.8 - this.health / 100));
+    this.health = Math.min(this.health + 80, 100);
+    this.attack = attack;
+    this.defence = defence;
+  }
 }
