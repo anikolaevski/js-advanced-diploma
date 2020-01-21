@@ -75,7 +75,7 @@ function createPositions(team, myPosCharacters, teamType) {
       }
     }
     setpos.add(pos);
-    console.log(pos, member.val.showStatus(), member.val);
+    // console.log(pos, member.val.showStatus(), member.val);
     myPosCharacters.push(new PositionedCharacter(member.val, pos));
     // }
   }
@@ -100,20 +100,25 @@ export function upgradeTeams(level) {
   // level rules
   const rul = levelRules[level];
   // Player's team levelup()
-  for (const member of GameState.myTeam) {
-    member.levelup();
+  for (const member of GameState.myTeam.set) {
+    member.val.levelup();
   }
   // Player's team: add extra units
-  generateTeam(AllowedClasses.player, rul.extralevels, rul.extraplayers).forEach((o) => {
-    GameState.myTeam.push(o);
-  });
+  const addteam = generateTeam(AllowedClasses.player, rul.extralevels, rul.extraplayers);
+  addteam.set.forEach(o => GameState.myTeam.set.push(o));
+
   // Opponent team: destroy and re-create
-  GameState.oppTeam.splice(0, GameState.oppTeam.length);
-  const oppTeam = generateTeam(AllowedClasses.opponent, initRules.maxlevel,
-    rul.players + rul.extraplayers);
+  // GameState.oppTeam.splice(0, GameState.oppTeam.length);
+  const oppTeam = generateTeam(AllowedClasses.opponent, rul.extralevels,
+    GameState.myTeam.set.length);
   GameState.oppTeam = oppTeam;
+
+  console.log('GameState.myTeam', GameState.myTeam);
+  console.log('GameState.oppTeam', GameState.oppTeam);
+
   createPositions(GameState.myTeam, myPosCharacters, 'player');
   createPositions(GameState.oppTeam, myPosCharacters, 'opponent');
+  return myPosCharacters;
 }
 
 export function checkCharType(typ) {

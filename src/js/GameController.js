@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import themes from './themes';
 import {
   createTeams, checkCharType, GlobalRules, upgradeTeams,
@@ -22,24 +23,19 @@ export default class GameController {
     this.gamePlay.redrawPositions(this.pos);
 
     if (this.gamePlay.cellClickListeners.length === 0) {
-      this.gamePlay.cellClickListeners.push((a) => {
-        this.onCellClick(a);
-      });
-      this.gamePlay.cellEnterListeners.push((a) => {
-        this.onCellEnter(a);
-      });
-      this.gamePlay.cellLeaveListeners.push((a) => {
-        this.onCellLeave(a);
-      });
+      const x1 = function (a) { this.onCellClick(a); }.bind(this);
+      const x2 = function (a) { this.onCellEnter(a); }.bind(this);
+      const x3 = function (a) { this.onCellLeave(a); }.bind(this);
+      this.gamePlay.cellClickListeners.push(x1);
+      this.gamePlay.cellEnterListeners.push(x2);
+      this.gamePlay.cellLeaveListeners.push(x3);
     }
     GameState.level = level;
     GameState.score = 0;
     GameState.turn = 'player';
     GameState.selected = 0;
     GameState.GameController = this;
-    // console.log(GameState.turn, GameState.myTeam, GameState.oppTeam );
-    console.log(GameState.GameController);
-    // console.log(this);
+    // console.log(GameState.GameController);
 
     // TODO: load saved stated from stateService
   }
@@ -49,15 +45,29 @@ export default class GameController {
   * typ - gane side, one of 'player'/'opponent'
   */
   levelFinish(typ) {
+    console.log('levelFinish started');
     if (typ === 'player') {
+      if (GameState.level >= 4) {
+        GamePlay.showMessage('Поздравляю! Вы выиграли!!!');
+        this.init(1);
+        GameState.selected = 0;
+        return 0;
+      }
       GameState.level += 1;
       GameState.score += 10;
+      const theme = themes.find(o => o.level === GameState.level);
+      this.gamePlay.drawUi(theme.name);
       // restore units health, upgrade units level, add units to player's team,
       // generate new opponent team
+      this.pos.splice(0, this.pos.length);
+      // console.log('spliced');
       this.pos = upgradeTeams(GameState.level);
+      // console.log('upgraded');
       this.gamePlay.redrawPositions(this.pos);
+      console.log('level:', theme.level, 'theme:', theme.name);
     } else {
       // regenerate teams within same level with default params
+      console.log('restarting same level', GameState.level);
       this.init(GameState.level);
     }
     GameState.selected = 0;
@@ -147,11 +157,11 @@ export default class GameController {
       }
     }
     if (attackunit) {
-      console.log('attackunit', attackunit);
+      // console.log('attackunit', attackunit);
       this.doAttack(attackunit.position, attackunit.plindex);
     }
     if (moveunit) {
-      console.log('moveunit', moveunit);
+      // console.log('moveunit', moveunit);
       this.moveChar(moveunit.position, moveunit.nextindex);
     }
     GameController.makeTurn();
@@ -166,7 +176,7 @@ export default class GameController {
     const unit1 = this.pos.find(p => p.position === index1);
     const unit2 = this.pos.find(p => p.position === index2);
     if (!unit1 || !unit2) {
-      this.gamePlay.showError('Неверно заданы параметры атаки!');
+      gamePlay.showError('Неверно заданы параметры атаки!');
       return false;
     }
     const attacker = unit1.character;
@@ -184,31 +194,23 @@ export default class GameController {
         self.pos.splice(posIndex2, 1);
         self.gamePlay.redrawPositions(self.pos);
       }
+      // calc units, finish level if all are killed
+      let playerUnits = 0;
+      let opponentUnits = 0;
+      for (const member of self.pos) {
+        if (checkCharType(member.character.type) === 'player') {
+          playerUnits++;
+        } else {
+          opponentUnits++;
+        }
+      }
+      if (playerUnits === 0) {
+        self.levelFinish('opponent');
+      } else if (opponentUnits === 0) {
+        self.levelFinish('player');
+      }
     };
     kill(calcDamage);
-    // console.log('Attack unit1', unit1);
-    // console.log('Attack unit2', unit2);
-    // console.log('calcDamage', calcDamage);
-
-    // calc units, finish level if all are killed
-    let playerUnits = 0;
-    let opponentUnits = 0;
-    for (const member of this.pos) {
-      if (checkCharType(member.character.type) === 'player') {
-        playerUnits++;
-      } else {
-        opponentUnits++;
-      }
-    }
-    console.log('playerUnits left', playerUnits);
-    console.log('opponentUnits left', opponentUnits);
-    console.log(this.pos);
-    if (playerUnits === 0) {
-      this.levelFinish('player');
-    } else if (opponentUnits === 0) {
-      this.levelFinish('opponent');
-    }
-
     return true;
   }
 
@@ -216,6 +218,7 @@ export default class GameController {
     // TODO: react to click
     const ch = this.pos.find(p => p.position === index);
     const range = calcRange(index, GameState.selected, GlobalRules.boardSize);
+    // console.log('click', index);
     if (ch) {
       // console.log('click', index, ch.character.type);
       if (GameState.turn === 'player') {
@@ -235,7 +238,7 @@ export default class GameController {
         }
       }
     } else if (typeof (GameState.selectedChar) !== 'undefined' && range <= GameState.selectedChar.range) { // move
-      console.log('move', index);
+      // console.log('move', index);
       this.moveChar(GameState.selected, index);
       this.gamePlay.deselectCell(GameState.selected);
       GameController.makeTurn();
