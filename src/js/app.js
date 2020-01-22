@@ -14,4 +14,3 @@ const gameCtrl = new GameController(gamePlay, stateService);
 gameCtrl.init(1);
 
 // don't write your code here
-// console.log(gamePlay);

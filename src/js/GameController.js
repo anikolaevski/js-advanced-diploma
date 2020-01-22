@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 /* eslint-disable no-plusplus */
 import themes from './themes';
 import {
@@ -26,9 +27,9 @@ export default class GameController {
       const xClick = function (a) { this.onCellClick(a); }.bind(this);
       const xEnter = function (a) { this.onCellEnter(a); }.bind(this);
       const xLeave = function (a) { this.onCellLeave(a); }.bind(this);
-      const xNew = function (a) { this.init(1); }.bind(this);
-      const xSave = function (a) { this.saveGame(); }.bind(this);
-      const xLoad = function (a) { this.loadGame(); }.bind(this);
+      const xNew = function () { this.init(1); }.bind(this);
+      const xSave = function () { this.saveGame(); }.bind(this);
+      const xLoad = function () { this.loadGame(); }.bind(this);
       this.gamePlay.cellClickListeners.push(xClick);
       this.gamePlay.cellEnterListeners.push(xEnter);
       this.gamePlay.cellLeaveListeners.push(xLeave);
@@ -40,7 +41,8 @@ export default class GameController {
     GameState.score = 0;
     GameState.turn = 'player';
     GameState.selected = 0;
-    if (typeof (GameState.MaxScore) === 'unknown') { GameState.MaxScore = 0; }
+    GameState.lock = 0;
+    if (typeof (GameState.MaxScore) === 'undefined') { GameState.MaxScore = 0; }
     GameState.GameController = this;
     // TODO: load saved stated from stateService
   }
@@ -97,14 +99,17 @@ export default class GameController {
   * Finish the level
   * typ - gane side, one of 'player'/'opponent'
   */
+  // eslint-disable-next-line consistent-return
   levelFinish(typ) {
+    // eslint-disable-next-line no-console
     console.log('levelFinish started');
     if (typ === 'player') {
       GameState.score += 10;
-      GameState.MaxScore = Math.max(GameState.score + 10, GameState.MaxScore);
+      GameState.MaxScore = Math.max(GameState.score, GameState.MaxScore) + 10;
       if (GameState.level >= 4) {
         GamePlay.showMessage(`Поздравляю! Вы выиграли!!! Ваш счет ${GameState.MaxScore} очков.`);
-        this.init(1);
+        // this.init(1);
+        GameState.lock = 1;
         GameState.selected = 0;
         return 0;
       }
@@ -114,13 +119,13 @@ export default class GameController {
       // restore units health, upgrade units level, add units to player's team,
       // generate new opponent team
       this.pos.splice(0, this.pos.length);
-      // console.log('spliced');
       this.pos = upgradeTeams(GameState.level);
-      // console.log('upgraded');
       this.gamePlay.redrawPositions(this.pos);
+      // eslint-disable-next-line no-console
       console.log('level:', theme.level, 'theme:', theme.name);
     } else {
       // regenerate teams within same level with default params
+      // eslint-disable-next-line no-console
       console.log('restarting same level', GameState.level);
       this.init(GameState.level);
     }
@@ -230,24 +235,26 @@ export default class GameController {
     const unit1 = this.pos.find(p => p.position === index1);
     const unit2 = this.pos.find(p => p.position === index2);
     if (!unit1 || !unit2) {
-      gamePlay.showError('Неверно заданы параметры атаки!');
+      GamePlay.showError('Неверно заданы параметры атаки!');
       return false;
     }
     const attacker = unit1.character;
     const target = unit2.character;
-    const calcDamage = Math.max(attacker.attack - target.defence, attacker.attack * 0.1);
+    const calcDamage = Math.round(100 * Math.max(attacker.attack
+      - target.defence, attacker.attack * 0.1)) / 100;
     const self = this;
     // eslint-disable-next-line func-names
     const kill = async function (x) {
-      const a = await self.gamePlay.showDamage(index2, x);
+      await self.gamePlay.showDamage(index2, x);
       if (target.health > calcDamage) { // make damage
         target.health -= calcDamage;
+        target.health = Math.round(target.health * 10) / 10;
       } else { // kill
         const posIndex2 = self.pos.findIndex(p => p.position === index2);
         self.gamePlay.deselectCell(index2);
         self.pos.splice(posIndex2, 1);
-        self.gamePlay.redrawPositions(self.pos);
       }
+      self.gamePlay.redrawPositions(self.pos);
       // calc units, finish level if all are killed
       let playerUnits = 0;
       let opponentUnits = 0;
@@ -268,8 +275,10 @@ export default class GameController {
     return true;
   }
 
+  // eslint-disable-next-line consistent-return
   onCellClick(index) {
     // TODO: react to click
+    if (GameState.lock > 0) { return 0; }
     const ch = this.pos.find(p => p.position === index);
     const range = calcRange(index, GameState.selected, GlobalRules.boardSize);
     // console.log('click', index);

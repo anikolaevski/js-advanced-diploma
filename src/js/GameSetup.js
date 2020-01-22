@@ -71,7 +71,7 @@ function createPositions(team, myPosCharacters, teamType) {
       setpos.add(pos);
     } else {
       while (setpos.has(pos)) {
-        console.log(`pos=${pos} is not free`);
+        // console.log(`pos=${pos} is not free`);
         pos = calcPosition(teamType);
       }
     }
@@ -151,7 +151,7 @@ export function reCreatePositions(myTeamParams, oppTeamParams) {
       setpos.add(pos);
       myPosCharacters.push(new PositionedCharacter(member.val, pos));
     }
-  }
+  };
   y(myTeam);
   y(oppTeam);
   return myPosCharacters;
