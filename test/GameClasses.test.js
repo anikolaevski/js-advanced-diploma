@@ -1,4 +1,6 @@
-import { Swordsman, Bowman, Magician, Undead, Vampire, Daemon } from '../src/js/GameClasses';
+import {
+  Swordsman, Bowman, Magician, Undead, Vampire, Daemon,
+} from '../src/js/GameClasses';
 
 test('Test Swordsman', () => {
   const result = new Swordsman(1);
