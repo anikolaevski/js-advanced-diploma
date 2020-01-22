@@ -5,6 +5,7 @@ export default class Character {
     this.defence = 0;
     this.health = 50;
     this.type = type;
+    this.startpos = 0;
     // TODO: throw error if user use "new Character()"
 
     // eslint-disable-next-line no-proto

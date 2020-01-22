@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 import themes from './themes';
 import {
-  createTeams, checkCharType, GlobalRules, upgradeTeams,
+  createTeams, checkCharType, GlobalRules, upgradeTeams, reCreatePositions,
 } from './GameSetup';
 import GamePlay from './GamePlay';
 import GameState from './GameState';
@@ -23,21 +23,74 @@ export default class GameController {
     this.gamePlay.redrawPositions(this.pos);
 
     if (this.gamePlay.cellClickListeners.length === 0) {
-      const x1 = function (a) { this.onCellClick(a); }.bind(this);
-      const x2 = function (a) { this.onCellEnter(a); }.bind(this);
-      const x3 = function (a) { this.onCellLeave(a); }.bind(this);
-      this.gamePlay.cellClickListeners.push(x1);
-      this.gamePlay.cellEnterListeners.push(x2);
-      this.gamePlay.cellLeaveListeners.push(x3);
+      const xClick = function (a) { this.onCellClick(a); }.bind(this);
+      const xEnter = function (a) { this.onCellEnter(a); }.bind(this);
+      const xLeave = function (a) { this.onCellLeave(a); }.bind(this);
+      const xNew = function (a) { this.init(1); }.bind(this);
+      const xSave = function (a) { this.saveGame(); }.bind(this);
+      const xLoad = function (a) { this.loadGame(); }.bind(this);
+      this.gamePlay.cellClickListeners.push(xClick);
+      this.gamePlay.cellEnterListeners.push(xEnter);
+      this.gamePlay.cellLeaveListeners.push(xLeave);
+      this.gamePlay.addNewGameListener(xNew);
+      this.gamePlay.addSaveGameListener(xSave);
+      this.gamePlay.addLoadGameListener(xLoad);
     }
     GameState.level = level;
     GameState.score = 0;
     GameState.turn = 'player';
     GameState.selected = 0;
+    if (typeof (GameState.MaxScore) === 'unknown') { GameState.MaxScore = 0; }
     GameState.GameController = this;
-    // console.log(GameState.GameController);
-
     // TODO: load saved stated from stateService
+  }
+
+  /*
+  * Save current game
+  */
+  saveGame() {
+    const gs = {
+      level: GameState.level,
+      score: GameState.score,
+      turn: GameState.turn,
+      selected: GameState.selected,
+      MaxScore: GameState.MaxScore,
+      selectedChar: GameState.selectedChar,
+      myTeam: GameState.myTeam,
+      oppTeam: GameState.oppTeam,
+      pos: this.pos,
+    };
+    this.stateService.save(gs);
+    GamePlay.showMessage('Игра сохранена!');
+  }
+
+  /*
+  * Load saved game
+  */
+
+  loadGame() {
+    // GamePlay.showMessage('Загрузка игры в разработке');
+    const x = async () => {
+      const gs = this.stateService.load();
+      // console.log(gs);
+      GameState.level = gs.level;
+      GameState.score = gs.score;
+      GameState.turn = gs.turn;
+      GameState.selected = gs.selected;
+      GameState.MaxScore = gs.MaxScore;
+      GameState.selectedChar = gs.selectedChar;
+      // GameState.myTeam = gs.myTeam;
+      // GameState.oppTeam = gs.oppTeam;
+      const theme = themes.find(o => o.level === GameState.level);
+      this.gamePlay.drawUi(theme.name);
+      this.pos = reCreatePositions(gs.myTeam, gs.oppTeam);
+      // console.log(this.pos);
+      this.gamePlay.redrawPositions(this.pos);
+      if (GameState.selected > 0) {
+        this.gamePlay.selectCell(GameState.selected);
+      }
+    };
+    x();
   }
 
   /*
@@ -47,14 +100,15 @@ export default class GameController {
   levelFinish(typ) {
     console.log('levelFinish started');
     if (typ === 'player') {
+      GameState.score += 10;
+      GameState.MaxScore = Math.max(GameState.score + 10, GameState.MaxScore);
       if (GameState.level >= 4) {
-        GamePlay.showMessage('Поздравляю! Вы выиграли!!!');
+        GamePlay.showMessage(`Поздравляю! Вы выиграли!!! Ваш счет ${GameState.MaxScore} очков.`);
         this.init(1);
         GameState.selected = 0;
         return 0;
       }
       GameState.level += 1;
-      GameState.score += 10;
       const theme = themes.find(o => o.level === GameState.level);
       this.gamePlay.drawUi(theme.name);
       // restore units health, upgrade units level, add units to player's team,
@@ -220,7 +274,6 @@ export default class GameController {
     const range = calcRange(index, GameState.selected, GlobalRules.boardSize);
     // console.log('click', index);
     if (ch) {
-      // console.log('click', index, ch.character.type);
       if (GameState.turn === 'player') {
         const ch1 = checkCharType(ch.character.type);
         if (ch1 === 'player') {

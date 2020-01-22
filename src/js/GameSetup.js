@@ -2,10 +2,11 @@
 import {
   Swordsman, Bowman, Magician, Undead, Vampire, Daemon,
 } from './GameClasses';
-
 import { generateTeam } from './generators';
 import PositionedCharacter from './PositionedCharacter';
 import GameState from './GameState';
+import Team from './Team';
+
 
 const AllowedClasses = {
   player: [Swordsman, Bowman, Magician],
@@ -74,10 +75,9 @@ function createPositions(team, myPosCharacters, teamType) {
         pos = calcPosition(teamType);
       }
     }
+    member.val.startpos = pos;
     setpos.add(pos);
-    // console.log(pos, member.val.showStatus(), member.val);
     myPosCharacters.push(new PositionedCharacter(member.val, pos));
-    // }
   }
 }
 
@@ -85,13 +85,10 @@ export function createTeams() {
   const myPosCharacters = [];
   const myTeam = generateTeam(AllowedClasses.player, initRules.maxlevel, initRules.players);
   const oppTeam = generateTeam(AllowedClasses.opponent, initRules.maxlevel, initRules.players);
-  // console.log('myTeam', myTeam);
-  // console.log('oppTeam', oppTeam);
   createPositions(myTeam, myPosCharacters, 'player');
   createPositions(oppTeam, myPosCharacters, 'opponent');
   GameState.myTeam = myTeam;
   GameState.oppTeam = oppTeam;
-  // // console.log('positions', myPosCharacters);
   return myPosCharacters;
 }
 
@@ -108,13 +105,11 @@ export function upgradeTeams(level) {
   addteam.set.forEach(o => GameState.myTeam.set.push(o));
 
   // Opponent team: destroy and re-create
-  // GameState.oppTeam.splice(0, GameState.oppTeam.length);
   const oppTeam = generateTeam(AllowedClasses.opponent, rul.extralevels,
     GameState.myTeam.set.length);
   GameState.oppTeam = oppTeam;
-
-  console.log('GameState.myTeam', GameState.myTeam);
-  console.log('GameState.oppTeam', GameState.oppTeam);
+  // console.log('GameState.myTeam', GameState.myTeam);
+  // console.log('GameState.oppTeam', GameState.oppTeam);
 
   createPositions(GameState.myTeam, myPosCharacters, 'player');
   createPositions(GameState.oppTeam, myPosCharacters, 'opponent');
@@ -126,4 +121,38 @@ export function checkCharType(typ) {
   if (AllowedTypes.player.find(o => o.toString().toUpperCase() === t)) { return 'player'; }
   if (AllowedTypes.opponent.find(o => o.toString().toUpperCase() === t)) { return 'opponent'; }
   return undefined;
+}
+
+export function reCreatePositions(myTeamParams, oppTeamParams) {
+  const myPosCharacters = [];
+  // eslint-disable-next-line func-names
+  const x = function (typ, arrParams) {
+    const team = new Team();
+    for (const param of arrParams.set) {
+      const i = AllowedTypes[typ].findIndex(o => o === param.val.type);
+      const char = new AllowedClasses[typ][i](param.val.level);
+      char.attack = param.val.attack;
+      char.defence = param.val.defence;
+      char.health = param.val.health;
+      char.startpos = param.val.startpos;
+      team.add(char);
+    }
+    return team;
+  };
+  const myTeam = x('player', myTeamParams);
+  const oppTeam = x('opponent', oppTeamParams);
+  GameState.myTeam = myTeam;
+  GameState.oppTeam = oppTeam;
+  // eslint-disable-next-line func-names
+  const y = function (team) {
+    const setpos = new Set();
+    for (const member of team.set) {
+      const pos = member.val.startpos;
+      setpos.add(pos);
+      myPosCharacters.push(new PositionedCharacter(member.val, pos));
+    }
+  }
+  y(myTeam);
+  y(oppTeam);
+  return myPosCharacters;
 }
