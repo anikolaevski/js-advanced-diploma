@@ -8,7 +8,7 @@ import GameState from './GameState';
 import Team from './Team';
 
 
-const AllowedClasses = {
+export const AllowedClasses = {
   player: [Swordsman, Bowman, Magician],
   opponent: [Undead, Vampire, Daemon],
 };
@@ -49,13 +49,13 @@ const levelRules = {
   },
 };
 
-const initRules = {
+export const initRules = {
   level: 1,
   players: 2,
   maxlevel: 1,
 };
 
-function calcPosition(teamType) {
+export function calcPosition(teamType) {
   const xlimits = AllowedPos[teamType].x;
   const ylimits = AllowedPos[teamType].y;
   const x = Math.floor(Math.random() * (xlimits[1] - xlimits[0] + 1)) + xlimits[0];
@@ -63,7 +63,7 @@ function calcPosition(teamType) {
   return y * GlobalRules.boardSize + x;
 }
 
-function createPositions(team, myPosCharacters, teamType) {
+export function createPositions(team, myPosCharacters, teamType) {
   const setpos = new Set();
   for (const member of team.set) {
     let pos = calcPosition(teamType);

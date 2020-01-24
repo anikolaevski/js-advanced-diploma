@@ -91,6 +91,7 @@ export default class GameController {
       if (GameState.selected > 0) {
         this.gamePlay.selectCell(GameState.selected);
       }
+      GameState.lock = 0;
     };
     x();
   }
