@@ -305,6 +305,8 @@ export default class GameController {
       this.moveChar(GameState.selected, index);
       this.gamePlay.deselectCell(GameState.selected);
       GameController.makeTurn();
+      this.gamePlay.selectCell(index);
+      GameState.selected = index;
     } else {
       GamePlay.showError(`Ячейка ${index} не содержит персонажа!`);
     }
