@@ -5,21 +5,18 @@ import {
 } from '../src/js/GameSetup';
 import GameState from '../src/js/GameState';
 import GameStateService from '../src/js/GameStateService';
-// import themes from '../src/js/themes';
-// import { GlobalRules } from '../src/js/GameSetup';
-// import { Swordsman } from '../src/js/GameClasses';
 
-jest.dontMock('../src/js/GamePlay');
 document.body.innerHTML = '<div id="game-container"></div>';
 const gamePlay = new GamePlay();
 gamePlay.bindToDOM(document.querySelector('#game-container'));
-const stateService = new GameStateService(localStorage);
+const stateService = new GameStateService(sessionStorage);
 const gameCtrl = new GameController(gamePlay, stateService);
 
 test('Test init', () => {
   const level = 1;
   gameCtrl.init(level);
   expect(gameCtrl.pos.length).toBe(4);
+  expect(GameState.turn).toBe('player');
 });
 
 test('Test moveChar', () => {
@@ -102,13 +99,16 @@ test('Test onCellClick on empty field', () => {
   window.alert = jsdomAlert;
 });
 
-test('Test onCellClick select', () => {
+test('Test onCellClick select all Player"s chars', () => {
   const level = 1;
   gameCtrl.init(level);
-  const ch1 = gameCtrl.pos.find(o => o.position % GlobalRules.boardSize <= 1);
-  const index = ch1.position;
-  gameCtrl.onCellClick(index);
-  expect(GameState.selected).toBe(index);
+  gameCtrl.pos.forEach((o) => {
+    if (o.position % GlobalRules.boardSize <= 1) {
+      const index = o.position;
+      gameCtrl.onCellClick(index);
+      expect(GameState.selected).toBe(index);
+    }
+  });
 });
 
 test('Test onCellClick on opponent unit', () => {
@@ -128,18 +128,96 @@ test('Test onCellClick on opponent unit', () => {
   window.alert = jsdomAlert;
 });
 
-// test('Test onCellEnter', () => {
-//   // let str;
-//   const level = 1;
-//   gameCtrl.init(level);
-//   const ch2 = gameCtrl.pos.find(
-//     o => o.position % GlobalRules.boardSize >= GlobalRules.boardSize - 2,
-//   );
-//   const index = ch2.position;
-//   gameCtrl.onCellEnter(index);
-//   const AllCells = document.getElementById('board').childNodes;
-//   const myCell = AllCells[index];
-//   const str = myCell.title;
-//   const expected = ch2.character.showStatus();
-//   expect(str).toBe(expected);
-// });
+test('Test onCellEnter / not empty', () => {
+  const level = 1;
+  gameCtrl.init(level);
+  const ch2 = gameCtrl.pos.find(
+    o => o.position % GlobalRules.boardSize >= GlobalRules.boardSize - 2,
+  );
+  const index = ch2.position;
+  gameCtrl.onCellEnter(index);
+  const AllCells = document.querySelector('[data-id=board]').childNodes;
+  const myCell = AllCells[index];
+  const str = myCell.title;
+  const expected = ch2.character.showStatus();
+  expect(str).toBe(expected);
+});
+
+test('Test onCellEnter point Player"s chars, check cursor style', () => {
+  const level = 1;
+  gameCtrl.init(level);
+  gameCtrl.pos.forEach((o) => {
+    if (o.position % GlobalRules.boardSize <= 1) {
+      const index = o.position;
+      gameCtrl.onCellEnter(index);
+      const str = gamePlay.boardEl.style.cursor;
+      const expected = 'pointer';
+      expect(str).toBe(expected);
+    }
+  });
+});
+
+test('Test onCellEnter select Player"s charts / point free cell, check cursor style: crosshair', async () => {
+  const level = 1;
+  let index = 0;
+  gameCtrl.init(level);
+  gameCtrl.pos.forEach((o) => {
+    if (o.position % GlobalRules.boardSize <= 1) {
+      index = Math.max(index, o.position);
+    }
+  });
+  gameCtrl.onCellClick(index);
+  gameCtrl.onCellEnter(index);
+  await expect(gamePlay.boardEl.style.cursor).toBe('crosshair');
+});
+
+test('Test onCellEnter select Player"s charts / point free cell, check cursor style: pointer', async () => {
+  const level = 1;
+  let index = 0;
+  gameCtrl.init(level);
+  gameCtrl.pos.forEach((o) => {
+    if (o.position % GlobalRules.boardSize <= 1) {
+      index = Math.max(index, o.position);
+    }
+  });
+  gameCtrl.onCellClick(index);
+  gameCtrl.onCellEnter(index + 1);
+  expect(gamePlay.boardEl.style.cursor).toBe('pointer');
+});
+
+test('Test onCellEnter / empty', () => {
+  const level = 1;
+  gameCtrl.init(level);
+  const ch2 = gameCtrl.pos.find(
+    o => o.position % GlobalRules.boardSize >= GlobalRules.boardSize - 2,
+  );
+  const index = ch2.position - 1;
+  gameCtrl.onCellEnter(index);
+  const str = gamePlay.boardEl.style.cursor;
+  const expected = 'not-allowed';
+  expect(str).toBe(expected);
+});
+
+test('Test onCellLeave', () => {
+  const level = 1;
+  gameCtrl.init(level);
+  const ch2 = gameCtrl.pos.find(
+    o => o.position % GlobalRules.boardSize >= GlobalRules.boardSize - 2,
+  );
+  const index = ch2.position;
+  gameCtrl.onCellLeave(index);
+  const AllCells = document.querySelector('[data-id=board]').childNodes;
+  const myCell = AllCells[index];
+  const str = myCell.title;
+  const expected = '';
+  expect(str).toBe(expected);
+});
+
+test('Test levelFinish', () => {
+  const level = 1;
+  gameCtrl.init(level);
+  gameCtrl.levelFinish('player');
+  expect(GameState.score).toBe(10);
+  expect(GameState.level).toBe(level + 1);
+  expect(GameState.turn).toBe('player');
+});
