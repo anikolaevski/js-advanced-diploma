@@ -157,7 +157,7 @@ test('Test onCellEnter point Player"s chars, check cursor style', () => {
   });
 });
 
-test('Test onCellEnter select Player"s charts / point free cell, check cursor style: crosshair', async () => {
+test('Test onCellEnter select Player"s charts / point free cell, check cursor style: crosshair', () => {
   const level = 1;
   let index = 0;
   gameCtrl.init(level);
@@ -168,10 +168,10 @@ test('Test onCellEnter select Player"s charts / point free cell, check cursor st
   });
   gameCtrl.onCellClick(index);
   gameCtrl.onCellEnter(index);
-  await expect(gamePlay.boardEl.style.cursor).toBe('crosshair');
+  expect(gamePlay.boardEl.style.cursor).toBe('crosshair');
 });
 
-test('Test onCellEnter select Player"s charts / point free cell, check cursor style: pointer', async () => {
+test('Test onCellEnter select Player"s charts / point free cell, check cursor style: pointer', () => {
   const level = 1;
   let index = 0;
   gameCtrl.init(level);
@@ -181,8 +181,11 @@ test('Test onCellEnter select Player"s charts / point free cell, check cursor st
     }
   });
   gameCtrl.onCellClick(index);
+  const x = () => {
+    expect(gamePlay.boardEl.style.cursor).toBe('pointer');
+  };
   gameCtrl.onCellEnter(index + 1);
-  expect(gamePlay.boardEl.style.cursor).toBe('pointer');
+  setTimeout(x, 1000);
 });
 
 test('Test onCellEnter / empty', () => {
